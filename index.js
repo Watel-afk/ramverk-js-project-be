@@ -1,18 +1,28 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const {
+  authorizeSession,
+  getSession,
+} = require("./manager/authorization.manager.js");
+
 const app = express();
 app.use(express.json());
 
-const fishesRoute = require("./routes/fishes.route.js");
+const authenticationsRoute = require("./routes/authentications.route.js");
+const itemsRoute = require("./routes/items.route.js");
+const usersRoute = require("./routes/users.route.js");
 
 // ------------------- Home -------------------
-app.get("/", function (req, res) {
-  res.send("Hello World");
+app.get("/", function (_, res) {
+  res.send(getSession());
 });
 
 // ------------------- Routes -------------------
-app.use("/fishes", fishesRoute);
+app.use("/authentications", authenticationsRoute);
+app.use("/items", authorizeSession, itemsRoute);
+app.use("/users", usersRoute);
 
+// ------------------- Start server and Initialize DB -------------------
 mongoose
   .connect(
     "mongodb+srv://admin:A3KHQdKGuANRg9tD@cluster0.1dhea.mongodb.net/Node-API?retryWrites=true&w=majority&appName=cluster0"
