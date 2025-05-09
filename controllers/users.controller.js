@@ -1,122 +1,74 @@
-var crypto = require("crypto");
-const User = require("../modules/users.model");
 const httpsUtil = require("../utils/httpsUtil");
-
-// ------------------- Constants -------------------
-const MAX_LENGTH_USERNAME = 50;
-const MIN_LENGTH_PASSWORD = 8;
-const MAX_LENGTH_PASSWORD = 128;
+const {
+  validateCreateNewUser,
+  validateChangePassword,
+  getCurrentUser,
+} = require("../manager/user.manager");
+const { hashPassword, createSalt } = require("../manager/password.manager");
+const User = require("../modules/users.model");
 
 // ------------------- CREATE -------------------
 const createUser = async (req, res) => {
   const password = req.body?.password;
   const username = req.body?.username;
 
-  if (!username || !password) {
-    return res
-      .status(httpsUtil.HTTP_STATUS.BAD_REQUEST)
-      .json({ message: "Username or password not provided" });
-  }
+  console.log("1");
 
-  if (username.length > MAX_LENGTH_USERNAME) {
-    return res.status(httpsUtil.HTTP_STATUS.BAD_REQUEST).json({
-      message: "Username too long, max length is",
-      MAX_LENGTH_USERNAME,
-    });
-  }
+  await validateCreateNewUser(username, password);
 
-  if (password.length > MAX_LENGTH_PASSWORD) {
-    return res.status(httpsUtil.HTTP_STATUS.BAD_REQUEST).json({
-      message: "Password to long, max length is " + MAX_LENGTH_PASSWORD,
-    });
-  }
+  const salt = createSalt();
 
-  if (password.length < MIN_LENGTH_PASSWORD) {
-    return res.status(httpsUtil.HTTP_STATUS.BAD_REQUEST).json({
-      message: "Password too short, min length is " + MIN_LENGTH_PASSWORD,
-    });
-  }
-
-  const salt = crypto.randomBytes(16).toString("hex");
-  const hash = crypto
-    .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
-    .toString(`hex`);
-
-  const user = await User.create({
+  await User.create({
     username: username,
-    password: hash,
+    password: hashPassword(password, salt),
     salt: salt,
     balance: 0,
   });
 
-  res
-    .status(httpsUtil.HTTP_STATUS.OK)
-    .json({ username: user.username, balance: user.balance });
+  res.sendStatus(httpsUtil.HTTP_STATUS.OK);
 };
 
-// ------------------- GET -------------------
+// ------------------- GET User -------------------
+
+//TODO: För test
 const getUsers = async (_, res) => {
-  try {
-    const users = await User.find({}, "username", "balance");
-    res.status(httpsUtil.HTTP_STATUS.OK).json({ users });
-  } catch (error) {
-    res.status(httpsUtil.HTTP_STATUS.ERROR).json({ message: error.message });
-  }
+  const users = await User.find({}, "username", "balance");
+  res.status(httpsUtil.HTTP_STATUS.OK).json({ users });
 };
 
-const getUser = async (req, res) => {
-  try {
-    const { id } = req.params;
+const getCurrentUserEndpoint = async (req, res) => {
+  const user = await getCurrentUser();
 
-    const user = getUserById(id);
-
-    res
-      .status(httpsUtil.HTTP_STATUS.OK)
-      .json({ username: user.username, coins: user.coins });
-  } catch (error) {
-    const status = error.httpStatus || httpsUtil.HTTP_STATUS.ERROR;
-    const message = error.message || "An unexpected error occurred";
-
-    res.status(status).json({ message: error.message });
-  }
+  res.status(httpsUtil.HTTP_STATUS.OK).json({
+    username: user.username,
+    balance: user.balance,
+  });
 };
 
 // ------------------- Password change -------------------
 const changePassword = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const password = req.body?.password;
+  const oldPassword = req.body?.oldPassword;
+  const newPassword = req.body?.newPassword;
+  const confirmedNewPassword = req.body?.confirmNewPassword;
+  const user = await getCurrentUser(req);
 
-    const user = await getUserById(id);
+  await validateChangePassword(
+    user,
+    oldPassword,
+    newPassword,
+    confirmedNewPassword
+  );
 
-    // User.findByIdAndUpdate();
+  await user.updateOne({
+    password: hashPassword(newPassword, user.salt),
+  });
 
-    res.status(httpsUtil.HTTP_STATUS.OK).json(await User.findById(id));
-  } catch (error) {
-    res.status(httpsUtil.HTTP_STATUS.ERROR).json({ message: error.message });
-  }
+  res.status(httpsUtil.HTTP_STATUS.OK);
 };
 
-// ------------------- Utils -------------------
-
-const getUserById = async (id) => {
-  if (!id) {
-    throw {
-      httpStatus: httpsUtil.HTTP_STATUS.NOT_FOUND,
-      message: "UserId not provided",
-    };
-  }
-
-  const user = await User.findById(id);
-
-  if (!user) {
-    throw {
-      httpStatus: httpsUtil.HTTP_STATUS.NOT_FOUND,
-      message: "User not found",
-    };
-  }
-
-  return user;
+module.exports = {
+  createUser,
+  getUsers,
+  getCurrentUserEndpoint,
+  changePassword,
 };
-
-module.exports = { createUser, getUsers, getUser, changePassword };

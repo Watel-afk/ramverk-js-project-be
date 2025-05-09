@@ -5,15 +5,15 @@ const httpUtils = require("../utils/httpsUtil");
 const sessions = [];
 
 function addSessionId(username) {
-  const sessionId = crypto.randomBytes(16).toString("base64");
-
   sessions.map((session, index) => {
     if (session.username === username) {
-      session.sessionId = sessionId;
-      sessions.pop(index);
+      // session.sessionId = sessionId;
+      // sessions.pop(index);
+      return session.sessionId;
     }
   });
 
+  const sessionId = crypto.randomBytes(16).toString("base64");
   sessions.push({ username: username, sessionId: sessionId });
 
   return sessionId;
@@ -23,8 +23,18 @@ function getSession() {
   return sessions;
 }
 
-function useHasValidSession(username) {
+function userHasValidSession(username) {
   return sessions.some((session) => session.username === username);
+}
+
+function getUsername(sessionId) {
+  sessions.map((session, index) => {
+    if (session.sessionId === sessionId) {
+      return session.username;
+    }
+  });
+
+  return null;
 }
 
 function removeSession(sessionId) {
@@ -55,6 +65,7 @@ module.exports = {
   authorizeSession,
   addSessionId,
   removeSession,
-  useHasValidSession,
+  userHasValidSession,
   getSession,
+  getUsername,
 };
