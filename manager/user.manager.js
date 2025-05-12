@@ -14,11 +14,16 @@ const { getUsername } = require("./authorization.manager.js");
 // ------------------- Constants -------------------
 const MAX_LENGTH_USERNAME = 50;
 
+const validateAddBalance = (balanceToAdd) => {
+  validateBalanceToAdd(balanceToAdd);
+};
+
 // ------------------- Current user -------------------
 const getCurrentUser = async (req) => {
-  const sessionId = req.headers["sessionId"];
+  const sessionId = req.headers?.sessionid;
 
   const username = getUsername(sessionId);
+
   const user = await getUserByName(username);
 
   if (!user) {
@@ -33,13 +38,9 @@ const getCurrentUser = async (req) => {
 
 // ------------------- Validate create new user -------------------
 const validateCreateNewUser = async (username, newPassword) => {
-  console.log("1");
   validatePasswordIsInitialized(newPassword);
-  console.log("2");
   validateUsernameIsInitialized(username);
-  console.log("3");
   validateUsernameLength(username);
-  console.log("4");
   validatePasswordLength(newPassword);
 
   await validateUserDoesNotAlreadyExist(username);
@@ -62,6 +63,22 @@ const validateChangePassword = async (
 };
 
 // ------------------- Validations -------------------
+validateBalanceToAdd = (balanceToAdd) => {
+  if (!balanceToAdd) {
+    throwHTTPError(
+      httpsUtil.HTTP_STATUS.BAD_REQUEST,
+      "Balance to add is not provided"
+    );
+  }
+
+  if (balanceToAdd <= 0) {
+    throwHTTPError(
+      httpsUtil.HTTP_STATUS.BAD_REQUEST,
+      "Balance to add has to be greater than 0"
+    );
+  }
+};
+
 const validateUsernameIsInitialized = (username) => {
   if (!username) {
     throwHTTPError(
@@ -81,11 +98,7 @@ const validateUsernameLength = (username) => {
 };
 
 const validateUserDoesNotAlreadyExist = async (username) => {
-  console.log("aaaaaaaaaaaaaaaaa");
-
   const user = await getUserByName(username);
-
-  console.log("bbbbbbbbbbbbb");
 
   if (user) {
     throwHTTPError(
@@ -96,6 +109,7 @@ const validateUserDoesNotAlreadyExist = async (username) => {
 };
 
 module.exports = {
+  validateAddBalance,
   validateCreateNewUser,
   getCurrentUser,
   validateChangePassword,

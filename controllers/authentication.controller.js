@@ -1,4 +1,3 @@
-const User = require("../modules/users.model");
 const {
   addSessionId,
   removeSession,
@@ -11,8 +10,9 @@ const { validateLogin } = require("../manager/password.manager");
 const login = async (req, res) => {
   const username = req.body?.username;
   const password = req.body?.password;
+  const confirmPassword = req.body?.confirmedPassword;
 
-  await validateLogin(username, password);
+  await validateLogin(username, password, confirmPassword);
 
   const sessionId = addSessionId(username);
   res
@@ -21,10 +21,10 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  const sessionId = req.headers["sessionId"];
+  const sessionId = req.headers?.sessionid;
   removeSession(sessionId);
 
-  res.status(httpUtils.HTTP_STATUS.OK);
+  res.sendStatus(httpUtils.HTTP_STATUS.OK);
 };
 
 module.exports = { login, logout };

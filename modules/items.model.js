@@ -13,22 +13,32 @@ const ItemSchema = new mongoose.Schema(
     category: {
       type: String,
       enum: ["Movie", "Series", "Game"],
+      message:
+        "{VALUE} is not a valid category. Allowed categories are: Movie, Series, Game.",
+      required: [true, "Category is required"],
+    },
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     type: {
       type: String,
-      enum: ["VHS", "DVD"],
+      enum: ["VHS", "DVD", "Cartridge", "Blu-ray", "Other"],
       required: true,
     },
-    quantity: {
+    publishedYear: {
       type: Number,
-      required: true,
+      required: [true, "No published year provided"],
+      min: [1800, "Published year must be after 1800"],
+      max: [new Date().getFullYear(), "Published year cannot be in the future"],
     },
-    price: {
+    purchasedPrice: {
       type: Number,
-      required: [true, "No price provided"],
+      required: [true, "No purchased price provided"],
+      min: [0, "Purchased price must be a positive number"],
     },
-    image: {
+    imageLink: {
       type: String,
       required: false,
     },

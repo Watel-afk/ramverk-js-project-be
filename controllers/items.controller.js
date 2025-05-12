@@ -1,68 +1,53 @@
 const Item = require("../modules/items.model");
+const { getCurrentUser } = require("../manager/user.manager");
+const { getItemControlled } = require("./utils.controller");
 
 // ------------------- CREATE -------------------
+// Eftersom inget krav har jag denna bara här för att lägga till data
 const createItem = async (req, res) => {
-  try {
-    const item = await Item.create(req.body);
-    res.status(200).json({ item });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  const purchasedPrice = req.body?.purchasedPrice;
+  const name = req.body?.name;
+  const description = req.body?.description;
+  const category = req.body?.category;
+  const type = req.body?.type;
+  const publishedYear = req.body?.publishedYear;
 
-// ------------------- DELETE -------------------
-const deleteItem = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const item = await Item.findByIdAndDelete(id);
+  const user = await getCurrentUser(req);
 
-    if (!item) {
-      return res.status(404).json({ message: "Item not found" });
-    }
-
-    res.status(200).json("Item deleted");
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  const item = await Item.create({
+    name,
+    description,
+    type,
+    category,
+    publishedYear,
+    purchasedPrice,
+    ownerId: user._id,
+  });
+  res.status(200).json({ item });
 };
 
 // ------------------- GET -------------------
-const getItems = async (req, res) => {
-  try {
-    const items = await Item.find({});
-    res.status(200).json({ items });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+const getItems = async (_, res) => {
+  const items = await Item.find({});
+  res.status(200).json({ items });
 };
 
 const getItem = async (req, res) => {
-  try {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    const item = await Item.findById(id);
-    res.status(200).json(item);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  const item = getItemControlled(id);
+
+  res.status(200).json(item);
 };
 
-// ------------------- UPDATE -------------------
-const updateItem = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const item = await Item.findById(id);
+const getMyItems = async (req, res) => {
+  const user = await getCurrentUser(req);
 
-    if (!item) {
-      return res.status(404).json({ message: "Item not found" });
-    }
+  const items = await Item.find({ ownerId: user._id }).sort({
+    name: 1,
+  });
 
-    await item.updateOne(req.body);
-
-    res.status(200).json(await Item.findById(id));
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  res.status(200).json({ items });
 };
 
-module.exports = { getItems, getItem, deleteItem, updateItem, createItem };
+module.exports = { getItems, getItem, createItem, getMyItems };

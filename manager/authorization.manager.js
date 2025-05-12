@@ -5,13 +5,13 @@ const httpUtils = require("../utils/httpsUtil");
 const sessions = [];
 
 function addSessionId(username) {
-  sessions.map((session, index) => {
-    if (session.username === username) {
-      // session.sessionId = sessionId;
-      // sessions.pop(index);
-      return session.sessionId;
-    }
-  });
+  const foundSessionId = sessions.find(
+    (session) => session.username === username
+  );
+
+  if (foundSessionId) {
+    return foundSessionId.sessionId;
+  }
 
   const sessionId = crypto.randomBytes(16).toString("base64");
   sessions.push({ username: username, sessionId: sessionId });
@@ -28,13 +28,11 @@ function userHasValidSession(username) {
 }
 
 function getUsername(sessionId) {
-  sessions.map((session, index) => {
-    if (session.sessionId === sessionId) {
-      return session.username;
-    }
-  });
+  const foundSessionId = sessions.find(
+    (session) => session.sessionId === sessionId
+  );
 
-  return null;
+  return foundSessionId ? foundSessionId.username : null;
 }
 
 function removeSession(sessionId) {
@@ -50,7 +48,7 @@ function sessionExist(sessionId) {
 }
 
 const authorizeSession = (req, res, next) => {
-  const sessionId = req.headers["sessionId"];
+  const sessionId = req.headers?.sessionid;
 
   if (!sessionId || !sessionExist(sessionId)) {
     return res

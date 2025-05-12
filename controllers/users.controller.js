@@ -1,5 +1,6 @@
 const httpsUtil = require("../utils/httpsUtil");
 const {
+  validateAddBalance,
   validateCreateNewUser,
   validateChangePassword,
   getCurrentUser,
@@ -7,12 +8,26 @@ const {
 const { hashPassword, createSalt } = require("../manager/password.manager");
 const User = require("../modules/users.model");
 
+const addBalance = async (req, res) => {
+  const balanceToAdd = req.body?.balanceToAdd;
+
+  validateAddBalance(balanceToAdd);
+
+  const user = await getCurrentUser(req);
+
+  user.balance += balanceToAdd;
+  await user.save();
+
+  res.status(httpsUtil.HTTP_STATUS.OK).json({
+    username: user.username,
+    balance: user.balance,
+  });
+};
+
 // ------------------- CREATE -------------------
 const createUser = async (req, res) => {
   const password = req.body?.password;
   const username = req.body?.username;
-
-  console.log("1");
 
   await validateCreateNewUser(username, password);
 
@@ -28,16 +43,16 @@ const createUser = async (req, res) => {
   res.sendStatus(httpsUtil.HTTP_STATUS.OK);
 };
 
-// ------------------- GET User -------------------
-
+// ------------------- GET Users -------------------
 //TODO: För test
 const getUsers = async (_, res) => {
-  const users = await User.find({}, "username", "balance");
+  const users = await User.find({}, "username balance");
   res.status(httpsUtil.HTTP_STATUS.OK).json({ users });
 };
 
+// ------------------- GET current user -------------------
 const getCurrentUserEndpoint = async (req, res) => {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(req);
 
   res.status(httpsUtil.HTTP_STATUS.OK).json({
     username: user.username,
@@ -67,6 +82,7 @@ const changePassword = async (req, res) => {
 };
 
 module.exports = {
+  addBalance,
   createUser,
   getUsers,
   getCurrentUserEndpoint,

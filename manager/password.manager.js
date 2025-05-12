@@ -1,6 +1,7 @@
 var crypto = require("crypto");
 const { throwHTTPError } = require("./error.manager.js");
 const { getUserByName } = require("../factory/user.factory");
+const httpsUtil = require("../utils/httpsUtil");
 
 // ------------------- Constants -------------------
 const MIN_LENGTH_PASSWORD = 8;
@@ -8,9 +9,10 @@ const MAX_LENGTH_PASSWORD = 128;
 
 // ------------------- Log in -------------------
 
-const validateLogin = async (username, password) => {
+const validateLogin = async (username, password, confirmedPassword) => {
   validatePasswordIsInitialized(password);
   validateUsernameIsInitialized(username);
+  validateNewAndConfirmedPasswordAreEqual(password, confirmedPassword);
 
   user = await getUserByName(username);
 
@@ -68,7 +70,7 @@ const validateNewAndConfirmedPasswordAreEqual = (
   if (newPassword !== confirmedPassword) {
     throwHTTPError(
       httpsUtil.HTTP_STATUS.BAD_REQUEST,
-      "New password and confirmed password are not equal"
+      "Password and confirmed password are not equal"
     );
   }
 };
@@ -109,7 +111,7 @@ const validateUsernameIsInitialized = (username) => {
   }
 };
 
-const validateUserExist = async (user) => {
+const validateUserExist = (user) => {
   if (!user) {
     throwHTTPError(httpsUtil.HTTP_STATUS.BAD_REQUEST, "User does not exist");
   }

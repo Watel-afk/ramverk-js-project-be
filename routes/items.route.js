@@ -1,17 +1,17 @@
 const express = require("express");
 const router = express.Router();
+const { asyncWrapper } = require("../utils/utils");
+
 const {
   getItems,
   getItem,
+  getMyItems,
   createItem,
-  deleteItem,
-  updateItem,
 } = require("../controllers/items.controller");
 
-router.post("/create-item", createItem);
-router.delete("/:id/delete-item", deleteItem);
-router.get("/get-items", getItems);
-router.get("/:id/get-item", getItem);
-router.post("/:id/update-item", updateItem);
+router.post("/create-item", asyncWrapper(createItem));
+router.get("/get-items", asyncWrapper(getItems));
+router.get("/get-my-items", asyncWrapper(getMyItems));
+router.get("/:id/get-item", asyncWrapper(getItem));
 
 module.exports = router;
