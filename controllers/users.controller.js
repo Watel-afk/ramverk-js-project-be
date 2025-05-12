@@ -19,17 +19,20 @@ const addBalance = async (req, res) => {
   await user.save();
 
   res.status(httpsUtil.HTTP_STATUS.OK).json({
-    username: user.username,
-    balance: user.balance,
+    user: {
+      username: user.username,
+      balance: user.balance,
+    },
   });
 };
 
 // ------------------- CREATE -------------------
 const createUser = async (req, res) => {
   const password = req.body?.password;
+  const confirmNewPassword = req.body?.confirmNewPassword;
   const username = req.body?.username;
 
-  await validateCreateNewUser(username, password);
+  await validateCreateNewUser(username, password, confirmNewPassword);
 
   const salt = createSalt();
 
@@ -55,8 +58,10 @@ const getCurrentUserEndpoint = async (req, res) => {
   const user = await getCurrentUser(req);
 
   res.status(httpsUtil.HTTP_STATUS.OK).json({
-    username: user.username,
-    balance: user.balance,
+    user: {
+      username: user.username,
+      balance: user.balance,
+    },
   });
 };
 
@@ -78,7 +83,7 @@ const changePassword = async (req, res) => {
     password: hashPassword(newPassword, user.salt),
   });
 
-  res.status(httpsUtil.HTTP_STATUS.OK);
+  res.sendStatus(httpsUtil.HTTP_STATUS.OK);
 };
 
 module.exports = {

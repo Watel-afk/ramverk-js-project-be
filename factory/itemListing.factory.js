@@ -3,7 +3,7 @@ const ItemListing = require("../modules/itemListing.model");
 const getItemListing = async (id) => {
   if (!id) return null;
 
-  return await ItemListing.findById({ id });
+  return await ItemListing.findById(id);
 };
 
 const getItemListingByItemAndOwner = async (owner, item) => {

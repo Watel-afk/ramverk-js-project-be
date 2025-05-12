@@ -9,10 +9,9 @@ const MAX_LENGTH_PASSWORD = 128;
 
 // ------------------- Log in -------------------
 
-const validateLogin = async (username, password, confirmedPassword) => {
+const validateLogin = async (username, password) => {
   validatePasswordIsInitialized(password);
   validateUsernameIsInitialized(username);
-  validateNewAndConfirmedPasswordAreEqual(password, confirmedPassword);
 
   user = await getUserByName(username);
 

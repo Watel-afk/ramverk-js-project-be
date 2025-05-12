@@ -17,7 +17,7 @@ const buyItemListing = async (req, res) => {
   const itemListing = await getItemListingControlled(id);
   const user = await getCurrentUser(req);
 
-  validateBuyItemListing(user, item);
+  validateBuyItemListing(user, itemListing);
 
   const item = await getItemControlled(itemListing.itemId);
 
@@ -71,17 +71,13 @@ const getMyItemListings = async (req, res) => {
 
 // ------------------- Get available item listings -------------------
 const getAvailableItemListings = async (_, res) => {
-  const itemListings = await ItemListing.find({ status: "available" }).sort({
-    createdAt: -1,
-  });
-
-  res
-    .status(httpUtils.HTTP_STATUS.OK)
-    .json({ itemListings })
+  const itemListings = await ItemListing.find({ status: "available" })
     .sort({
       createdAt: -1,
     })
     .populate("itemId");
+
+  res.status(httpUtils.HTTP_STATUS.OK).json({ itemListings });
 };
 
 module.exports = {

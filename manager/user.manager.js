@@ -37,11 +37,17 @@ const getCurrentUser = async (req) => {
 };
 
 // ------------------- Validate create new user -------------------
-const validateCreateNewUser = async (username, newPassword) => {
+const validateCreateNewUser = async (
+  username,
+  newPassword,
+  confirmNewPassword
+) => {
   validatePasswordIsInitialized(newPassword);
   validateUsernameIsInitialized(username);
   validateUsernameLength(username);
   validatePasswordLength(newPassword);
+
+  validateNewAndConfirmedPasswordAreEqual(newPassword, confirmNewPassword);
 
   await validateUserDoesNotAlreadyExist(username);
 };

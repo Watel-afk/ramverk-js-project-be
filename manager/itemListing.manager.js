@@ -1,6 +1,8 @@
 const {
   getItemListingByItemAndOwner,
 } = require("../factory/itemListing.factory");
+const httpsUtil = require("../utils/httpsUtil");
+const { throwHTTPError } = require("./error.manager.js");
 
 const validateBuyItemListing = (user, itemListing) => {
   validateUserDoesNotOwnItemListing(user, itemListing);

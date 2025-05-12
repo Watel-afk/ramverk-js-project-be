@@ -10,6 +10,7 @@ app.use(express.json());
 
 const authenticationsRoute = require("./routes/authentications.route.js");
 const itemsRoute = require("./routes/items.route.js");
+const itemListingsRoute = require("./routes/itemListing.route.js");
 const usersRoute = require("./routes/users.route.js");
 
 // ------------------- Home -------------------
@@ -20,6 +21,7 @@ app.get("/", function (_, res) {
 // ------------------- Routes -------------------
 app.use("/authentications", authenticationsRoute);
 app.use("/items", authorizeSession, itemsRoute);
+app.use("/item-listings", authorizeSession, itemListingsRoute);
 app.use("/users", usersRoute);
 
 // ------------------- Start server and Initialize DB -------------------

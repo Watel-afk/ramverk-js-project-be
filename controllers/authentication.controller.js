@@ -10,9 +10,8 @@ const { validateLogin } = require("../manager/password.manager");
 const login = async (req, res) => {
   const username = req.body?.username;
   const password = req.body?.password;
-  const confirmPassword = req.body?.confirmedPassword;
 
-  await validateLogin(username, password, confirmPassword);
+  await validateLogin(username, password);
 
   const sessionId = addSessionId(username);
   res

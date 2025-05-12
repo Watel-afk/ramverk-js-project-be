@@ -35,9 +35,9 @@ const getItems = async (_, res) => {
 const getItem = async (req, res) => {
   const { id } = req.params;
 
-  const item = getItemControlled(id);
+  const item = await getItemControlled(id);
 
-  res.status(200).json(item);
+  res.status(200).json({ item });
 };
 
 const getMyItems = async (req, res) => {
