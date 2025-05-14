@@ -5,8 +5,17 @@ const {
   getSession,
 } = require("./manager/authorization.manager.js");
 
+const cors = require("cors");
 const app = express();
+
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+    allowedHeaders: ["Content-Type", "sessionId"],
+  })
+);
 
 const authenticationsRoute = require("./routes/authentications.route.js");
 const itemsRoute = require("./routes/items.route.js");
@@ -31,8 +40,8 @@ mongoose
   )
   .then(() => {
     console.log("Connected to database");
-    app.listen(3000, () => {
-      console.log("Server is running on port 3000");
+    app.listen(8080, () => {
+      console.log("Server is running on port 8080");
     });
   })
   .catch((err) => console.log("Connection failed", err));
