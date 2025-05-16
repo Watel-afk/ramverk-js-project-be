@@ -43,9 +43,9 @@ function removeSession(sessionId) {
   });
 }
 
-function sessionExist(sessionId) {
+const sessionExist = (sessionId) => {
   return sessions.some((session) => session.sessionId === sessionId);
-}
+};
 
 const authorizeSession = (req, res, next) => {
   const sessionId = req.headers?.sessionid;
@@ -66,4 +66,5 @@ module.exports = {
   userHasValidSession,
   getSession,
   getUsername,
+  sessionExist,
 };

@@ -1,6 +1,7 @@
 const Item = require("../modules/items.model");
 const { getCurrentUser } = require("../manager/user.manager");
 const { getItemControlled } = require("./utils.controller");
+const ItemListing = require("../modules/itemListing.model");
 
 // ------------------- CREATE -------------------
 // Eftersom inget krav har jag denna bara här för att lägga till data
@@ -11,6 +12,7 @@ const createItem = async (req, res) => {
   const category = req.body?.category;
   const type = req.body?.type;
   const publishedYear = req.body?.publishedYear;
+  const imageLink = req.body?.imageLink;
 
   const user = await getCurrentUser(req);
 
@@ -21,6 +23,7 @@ const createItem = async (req, res) => {
     category,
     publishedYear,
     purchasedPrice,
+    imageLink,
     ownerId: user._id,
   });
   res.status(200).json({ item });
@@ -47,7 +50,17 @@ const getMyItems = async (req, res) => {
     name: 1,
   });
 
-  res.status(200).json({ items });
+  const itemsWithListing = await Promise.all(
+    items.map(async (item) => {
+      const availableItemListing = await ItemListing.findOne({
+        itemId: item._id,
+        status: "available",
+      });
+      return { ...item.toObject(), availableItemListing };
+    })
+  );
+
+  res.status(200).json({ items: itemsWithListing });
 };
 
 module.exports = { getItems, getItem, createItem, getMyItems };

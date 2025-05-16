@@ -7,6 +7,7 @@ const {
   createItemListing,
   getMyItemListings,
   getAvailableItemListings,
+  removeItemListing,
 } = require("../controllers/itemListing.controller");
 
 router.post("/:id/buy-item-listing", asyncWrapper(buyItemListing));
@@ -16,5 +17,6 @@ router.get(
   asyncWrapper(getAvailableItemListings)
 );
 router.get("/get-my-item-listings", asyncWrapper(getMyItemListings));
+router.post("/:id/remove-item-listing", asyncWrapper(removeItemListing));
 
 module.exports = router;

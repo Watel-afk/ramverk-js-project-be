@@ -40,7 +40,7 @@ const ItemSchema = new mongoose.Schema(
     },
     imageLink: {
       type: String,
-      required: false,
+      required: true,
     },
   },
   { timestamps: true }

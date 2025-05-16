@@ -20,6 +20,7 @@ const addBalance = async (req, res) => {
 
   res.status(httpsUtil.HTTP_STATUS.OK).json({
     user: {
+      _id: user._id,
       username: user.username,
       balance: user.balance,
     },
@@ -59,6 +60,7 @@ const getCurrentUserEndpoint = async (req, res) => {
 
   res.status(httpsUtil.HTTP_STATUS.OK).json({
     user: {
+      _id: user._id,
       username: user.username,
       balance: user.balance,
     },

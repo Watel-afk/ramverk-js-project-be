@@ -3,9 +3,12 @@ const mongoose = require("mongoose");
 const {
   authorizeSession,
   getSession,
+  sessionExist,
+  getUsername,
 } = require("./manager/authorization.manager.js");
 
 const cors = require("cors");
+const http = require("http");
 const app = express();
 
 app.use(express.json());
@@ -16,6 +19,7 @@ app.use(
     allowedHeaders: ["Content-Type", "sessionId"],
   })
 );
+app.use("/images", express.static("images"));
 
 const authenticationsRoute = require("./routes/authentications.route.js");
 const itemsRoute = require("./routes/items.route.js");
@@ -33,6 +37,45 @@ app.use("/items", authorizeSession, itemsRoute);
 app.use("/item-listings", authorizeSession, itemListingsRoute);
 app.use("/users", usersRoute);
 
+const server = http.createServer(app);
+
+// --- WebSocket setup ---
+const WebSocket = require("ws");
+const { getUserByName } = require("./factory/user.factory.js");
+const wss = new WebSocket.Server({ server });
+
+wss.on("connection", (ws, req) => {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const sessionId = url.searchParams.get("sessionId");
+
+  if (!sessionExist(sessionId)) {
+    console.log("invalid session");
+
+    ws.close();
+    return;
+  }
+
+  const intervalId = setInterval(async () => {
+    const username = getUsername(sessionId);
+    const user = await getUserByName(username);
+
+    if (user !== null) {
+      ws.send(
+        JSON.stringify({
+          _id: user._id,
+          username: user.username,
+          balance: user.balance,
+        })
+      );
+    }
+  }, 5000);
+
+  ws.on("close", () => {
+    console.log("WebSocket client disconnected");
+    clearInterval(intervalId);
+  });
+});
+
 // ------------------- Start server and Initialize DB -------------------
 mongoose
   .connect(
@@ -40,7 +83,7 @@ mongoose
   )
   .then(() => {
     console.log("Connected to database");
-    app.listen(8080, () => {
+    server.listen(8080, () => {
       console.log("Server is running on port 8080");
     });
   })

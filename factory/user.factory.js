@@ -8,4 +8,12 @@ const getUserByName = async (username) => {
   return user;
 };
 
-module.exports = { getUserByName };
+const getUser = async (id) => {
+  if (!id) return null;
+
+  const user = await User.findById(id);
+
+  return user;
+};
+
+module.exports = { getUserByName, getUser };
