@@ -9,6 +9,10 @@ const {
 
 const cors = require("cors");
 const http = require("http");
+require("dotenv").config();
+
+const PORT = process.env.PORT || 8080;
+
 const app = express();
 
 app.use(express.json());
@@ -39,7 +43,7 @@ app.use("/users", usersRoute);
 
 const server = http.createServer(app);
 
-// --- WebSocket setup ---
+// ------------------- WebSocket -------------------
 const WebSocket = require("ws");
 const { getUserByName } = require("./factory/user.factory.js");
 const wss = new WebSocket.Server({ server });
@@ -50,7 +54,6 @@ wss.on("connection", (ws, req) => {
 
   if (!sessionExist(sessionId)) {
     console.log("invalid session");
-
     ws.close();
     return;
   }
@@ -71,7 +74,6 @@ wss.on("connection", (ws, req) => {
   }, 5000);
 
   ws.on("close", () => {
-    console.log("WebSocket client disconnected");
     clearInterval(intervalId);
   });
 });
@@ -83,8 +85,8 @@ mongoose
   )
   .then(() => {
     console.log("Connected to database");
-    server.listen(8080, () => {
-      console.log("Server is running on port 8080");
+    server.listen(PORT, () => {
+      console.log("Server is running on port " + PORT);
     });
   })
   .catch((err) => console.log("Connection failed", err));
